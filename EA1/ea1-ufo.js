@@ -3,31 +3,33 @@ var ufoheight = 214;
 var maxcol = 5;
 var maxrow = 6;
 var ufomax = 42;
-var oben = 0;
+var reihe = 0;
+var spalte = 0;
 
-function ufostart(counter, col) {
+function ufostart(counter) {
 	setTimeout(function(){
 		var img = document.getElementById('ufo');
 		if(counter < ufomax - 1) {
-			if (col > maxcol) {
-				col = 0;
-				oben++;
+			if (spalte > maxcol) {
+				spalte = 0;
+				reihe++;
 			}
-			if (oben > maxrow) {
-				oben = 0;
-				col = 0;
+			if (reihe > maxrow) {
+				spalte = 0;
+				reihe = 0;
 			}
-			var newLeft = (-1) * ufowidth * col;
-			var newTop = (-1) * ufoheight * oben;
+			var newLeft = (-1) * ufowidth * spalte;
+			var newTop = (-1) * ufoheight * reihe;
 			setBackgroundPosUfo(img, newLeft, newTop);
 			
 			counter++;
-			col++;
-			ufostart(counter, col);
+			spalte++;
+			ufostart(counter);
 		} else {
 			setBackgroundPosUfo(img, 0, 0);
-			oben = 0;
-			ufostart(1, 1);
+			reihe = 0;
+			spalte = 1
+			ufostart(1);
 		}
 	}, 100);
 }
@@ -36,4 +38,4 @@ function setBackgroundPosUfo(img, left1, top1) {
 	img.setAttribute('style', 'background-position: '+left1+'px '+top1+'px;');
 }
 
-ufostart(0, 0);
+ufostart(0);

@@ -1,5 +1,6 @@
 var width = 257;
 var max = 25;
+var left1 = 0;
 
 function start(counter) {
 	setTimeout(function(){
@@ -17,8 +18,6 @@ function start(counter) {
 		}
 	}, 100);
 }
-
-var left1 = 0;
 
 window.onkeydown = function(evt) {
 	var key = evt.which ? evt.which : evt.keyCode;

@@ -29,6 +29,12 @@
 			margin: auto;
 		}
 	
+		#box2 {
+			width: 600px;
+			padding-top: 20px;
+			margin: auto;
+		}
+	
 		#scheibenwelt1 {
 			float: left;
 			width: 257px;
@@ -39,6 +45,7 @@
 		}
 		
 		#scheibenwelt2 {
+			float: left;
 			width: 257px;
 			height: 257px;
 			margin: auto;
@@ -47,9 +54,10 @@
 		}
 		
 		#ufo {
+			float: left;
 			width: 214;
 			height: 214;
-			margin: auto;
+			margin-left: 100px;
 			background: url('img/ufo.png') left top no-repeat;
 			background-position: 0px 0px;
 		}
@@ -64,19 +72,21 @@
 		<h1 align="center">Einsendeaufgabe 1</h1>
 		<h2 align="center">Die Scheibenwelt</h2>
 		<div id="box">
-			<div class="arrow" align="right"><h1><</h1>Press L</div>
+			<div class="arrow" align="right"><h1><img src="img/antiuhrzeigersinn.png" alt="<" /></h1>Press L</div>
 			<div id="scheibenwelt1"></div>
-			<div class="arrow"><h1>></h1>Press R</div>
+			<div class="arrow"><h1><img src="img/uhrzeigersinn.png" alt=">" /></h1>Press R</div>
 		</div>
 		
 		<div style="clear: both; padding-top: 50px;"></div>
 		
 		<h2 align="center">Erweiterung</h2>
-
-		<div id="scheibenwelt2"></div>
 		
-		<div id="ufo"></div>
+		<div id="box2">
+			<div id="scheibenwelt2"></div>
+			<div id="ufo"></div>
+		</div>
 
-		<p align="center" id="credits">Background Photo by Min An from <a href="https://www.pexels.com/photo/full-moon-illustration-713664/" target=_blank>Pexels</a></p>
+
+		<p align="center" id="credits">Christine Mitsch - TH L&uuml;beck - Wintersemester 2019/20</p>
 	</body>
 </html>
