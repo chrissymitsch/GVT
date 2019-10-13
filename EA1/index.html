@@ -1,0 +1,82 @@
+<!DOCTYPE html5>
+<html>
+	<head>
+		<script src="ea1.js"></script>
+		<script src="ea1-ufo.js"></script>
+	</head>
+	<style type="text/css">
+		body {
+			margin: 2%;
+			background: #000;
+			background-size: 100% 100%;
+			background-color: #000;
+			color: #aaa;
+			font-family: "Arial", sans-serif;
+		}
+		
+		a {
+			color: #aaa;
+		}
+		
+		.arrow {
+			width: 50px;
+			float: left;
+			padding: 25px;
+		}
+		
+		#box {
+			width: 457px;
+			margin: auto;
+		}
+	
+		#scheibenwelt1 {
+			float: left;
+			width: 257px;
+			height: 257px;
+			margin: auto;
+			background: url('img/scheibenwelt1.png') left top no-repeat;
+			background-position: 0px 0px;
+		}
+		
+		#scheibenwelt2 {
+			width: 257px;
+			height: 257px;
+			margin: auto;
+			background: url('img/scheibenwelt1.png') left top no-repeat;
+			background-position: 0px 0px;
+		}
+		
+		#ufo {
+			width: 214;
+			height: 214;
+			margin: auto;
+			background: url('img/ufo.png') left top no-repeat;
+			background-position: 0px 0px;
+		}
+		
+		#credits {
+			position: fixed;
+			bottom: 10px;
+			right: 10px;
+		}
+	</style>
+	<body>
+		<h1 align="center">Einsendeaufgabe 1</h1>
+		<h2 align="center">Die Scheibenwelt</h2>
+		<div id="box">
+			<div class="arrow" align="right"><h1><</h1>Press L</div>
+			<div id="scheibenwelt1"></div>
+			<div class="arrow"><h1>></h1>Press R</div>
+		</div>
+		
+		<div style="clear: both; padding-top: 50px;"></div>
+		
+		<h2 align="center">Erweiterung</h2>
+
+		<div id="scheibenwelt2"></div>
+		
+		<div id="ufo"></div>
+
+		<p align="center" id="credits">Background Photo by Min An from <a href="https://www.pexels.com/photo/full-moon-illustration-713664/" target=_blank>Pexels</a></p>
+	</body>
+</html>
