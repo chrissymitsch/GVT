@@ -1,0 +1,59 @@
+<!DOCTYPE html5>
+<html>
+	<head>
+	</head>
+	<style type="text/css">
+		body {
+			margin: 0;
+			background-size: 100% 100%;
+			background-color: #333;
+			font-family: "Roboto","Helvetica Neue",Helvetica,Arial,sans-serif;
+			text-transform: uppercase;
+			letter-spacing: 5px;
+			height: 100vh;
+		}
+		
+		h1 {
+			margin: 2%;
+			font-weight: normal;
+			color: #F2E500;
+		}
+		
+		.wrapper {
+			background-color: #fff;
+			-webkit-border-radius: 50px;
+			-moz-border-radius: 50px;
+			border-radius: 50px;
+			border: 5px solid #333;
+			width: 550px;
+			height: 600px;
+			margin: auto;
+			float: left;
+		}
+		
+		.flaeche {
+			width: 500px;
+			height: 500px;
+			padding-top: 25px;
+			margin: auto;
+		}
+	</style>
+	<body>
+		<h1 align="center">Einsendeaufgabe 4</h1>
+		<div class="wrapper">
+			<div class="flaeche">
+				<canvas id="canvas" width="500" height="500"></canvas>
+				Blau: Antisymmetrischer Torus (<a href="http://www.3d-meier.de/tut3/Seite59.html" target=_blank>?</a>)<br />
+				Gelb: Gewellter Torus II (<a href="http://www.3d-meier.de/tut3/Seite173.html" target=_blank>?</a>)
+			</div>
+		</div>
+		<div class="wrapper">
+			<div class="flaeche">
+				<canvas id="canvas2" width="500" height="500"></canvas>
+				Subtraktion: A.T. (<a href="http://www.3d-meier.de/tut3/Seite59.html" target=_blank>?</a>) - G.T.II (<a href="http://www.3d-meier.de/tut3/Seite173.html" target=_blank>?</a>)
+			</div>
+		</div>
+		<script src="ea4.js"></script>
+		<script src="ea4-1.js"></script>
+	</body>
+</html>
