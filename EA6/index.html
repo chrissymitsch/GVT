@@ -1,0 +1,116 @@
+<!DOCTYPE html5>
+<html>
+	<head>
+		<script src="ext/gl-matrix.js"></script>
+		<script src="GVT_Src_vertexData_sphere.js"></script>
+		<script src="GVT_Src_vertexData_torus.js"></script>
+		<script src="GVT_Src_vertexData_plane.js"></script>
+		<script src="ea6.js"></script>
+		<script type="x-shader/x-vertex" id="vertexshader">
+			attribute vec3 aPosition;
+			attribute vec3 aNormal;
+
+			uniform mat4 uPMatrix;
+			uniform mat4 uMVMatrix;
+			uniform mat3 uNMatrix;
+			uniform vec4 uColor;
+
+			varying vec4 vColor;
+
+			void main(){
+				vec3 tNormal = uNMatrix * aNormal;
+				gl_Position = uPMatrix * uMVMatrix * vec4(aPosition, 1.0);
+
+				vColor = vec4(tNormal.z, tNormal.z, tNormal.z, 1.0);
+				vColor = uColor * (vColor + 1.0) / 2.0;
+			}
+		</script>
+		<script type="x-shader/x-fragment" id="fragmentshader">
+			precision mediump float;
+			varying vec4 vColor;
+
+			void main() {
+			gl_FragColor = vColor;
+			}
+		</script>
+	</head>
+	<style type="text/css">
+		body {
+			margin: 0;
+			background-size: 100% 100%;
+			background-color: #333;
+			font-family: "Roboto","Helvetica Neue",Helvetica,Arial,sans-serif;
+			text-transform: uppercase;
+		}
+		
+		h1 {
+			letter-spacing: 5px;
+			margin: 2%;
+			font-weight: normal;
+			color: #F2F2F2;
+		}
+		
+		.wrapper {
+			background-color: #fff;
+			-webkit-border-radius: 50px;
+			-moz-border-radius: 50px;
+			border-radius: 50px;
+			border: 5px solid #333;
+			width: 700px;
+			height: 750px;
+			margin: auto;
+		}
+		
+		.flaeche {
+			width: 650px;
+			height: 650px;
+			padding-top: 25px;
+			margin: auto;
+		}
+
+		table tr td {
+			font-size: 10px;
+			letter-spacing: 2px;
+			color: #A2A2A2;
+		}
+	</style>
+	<body onload="app.start()">
+		<h1 align="center">Einsendeaufgabe 6 - Objekte bewegen - fliegende Kugeln</h1>
+		<div class="wrapper">
+			<div class="flaeche">
+				<canvas id="canvas" width="650" height="650"></canvas>
+				<table border="0" width="100%">
+					<tr>
+						<td width="25%"><strong>C / H</strong></td>
+						<td width="25%">Bewegung der Kamera</td>
+						<td width="10%"></td>
+						<td width="20%"><strong>X / Y / Z</strong></td>
+						<td width="20%">Rotation Torus</td>
+					</tr>
+					<tr>
+						<td width="25%"><strong>D / V</strong></td>
+						<td width="25%">Distance / Fovy</td>
+						<td width="10%"></td>
+						<td width="20%">S</td>
+						<td width="20%">Skalierung Torus</td>
+					</tr>
+					<tr>
+						<td width="25%"><strong>B</strong></td>
+						<td width="25%">Near Plane</td>
+						<td width="10%"></td>
+						<td width="20%">K</td>
+						<td width="20%">Animation</td>
+					</tr>
+					<tr>
+						<td width="25%"><strong>O / F / P</strong></td>
+						<td width="25%">Projection type</td>
+						<td width="10%"></td>
+						<td width="20%"><strong>+Shift</strong></td>
+						<td width="20%">Inverse</td>
+					</tr>
+
+				</table>
+			</div>
+		</div>
+	</body>
+</html>
