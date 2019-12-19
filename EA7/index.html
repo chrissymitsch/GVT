@@ -1,0 +1,113 @@
+<!DOCTYPE html5>
+<html>
+	<head>
+		<script src="ext/gl-matrix.js"></script>
+		<script src="GVT_Src_vertexData_zylinder.js"></script>
+		<script src="GVT_Src_vertexData_kegel.js"></script>
+		<script src="GVT_Src_vertexData_sphere.js"></script>
+		<script src="GVT_Src_vertexData_torus.js"></script>
+		<script src="ea7.js"></script>
+		<script type="x-shader/x-vertex" id="vertexshader">
+			precision mediump float;
+			
+			attribute vec3 aPosition;
+			attribute vec3 aNormal;
+			 
+			uniform mat4 uPMatrix;
+			uniform mat4 uMVMatrix;
+			uniform mat3 uNMatrix;
+			uniform vec4 uColor;
+			 
+			varying vec4 vColor;
+			
+			varying float displacement;
+			 
+			void main(){
+				gl_Position = uPMatrix * uMVMatrix * vec4(aPosition, 1.0);
+				vec3 tNormal = uNMatrix * aNormal;
+				vColor = uColor;
+			}
+		</script>
+		<script type="x-shader/x-fragment" id="fragmentshader">
+			precision mediump float;
+			varying vec4 vColor;
+			varying float displacement;
+			 
+			void main() {
+				gl_FragColor = vec4(vec3(gl_FragCoord.z), 1.0);
+			}
+		</script>
+	</head>
+	<style type="text/css">
+		body {
+			margin: 0;
+			background-size: 100% 100%;
+			background-color: #333;
+			font-family: "Roboto","Helvetica Neue",Helvetica,Arial,sans-serif;
+			text-transform: uppercase;
+		}
+		
+		h1 {
+			letter-spacing: 5px;
+			margin: 2%;
+			font-weight: normal;
+			color: #F2F2F2;
+		}
+		
+		.wrapper {
+			background-color: #fff;
+			-webkit-border-radius: 50px;
+			-moz-border-radius: 50px;
+			border-radius: 50px;
+			border: 5px solid #333;
+			width: 700px;
+			height: 750px;
+			margin: auto;
+		}
+		
+		.flaeche {
+			width: 650px;
+			height: 650px;
+			padding-top: 25px;
+			margin: auto;
+		}
+
+		table tr td {
+			font-size: 10px;
+			letter-spacing: 2px;
+			color: #A2A2A2;
+		}
+	</style>
+	<body onload="app.start()">
+		<div style="position: absolute; left:5%; top: 5%;"><img src="schneeflocke.png" /></div>
+		<div style="position: absolute; right:5%; top: 5%;"><img src="schneeflocke.png" /></div>
+		<h1 align="center">Einsendeaufgabe 7 - Z-Buffer Visualisierung</h1>
+		<div class="wrapper">
+			<div class="flaeche">
+				<canvas id="canvas" width="650" height="650"></canvas>
+				<table border="0" width="100%">
+					<tr>
+						<td width="25%"><strong>Pfeiltasten</strong></td>
+						<td width="25%">Bewegung der Kamera</td>
+						<td width="10%"></td>
+						<td width="20%"><strong></strong></td>
+						<td width="20%"></td>
+					</tr>
+					<tr>
+						<td width="25%"><strong>W / S</strong></td>
+						<td width="25%">Distance</td>
+						<td width="10%"></td>
+						<td width="20%"><strong>O / F / P</strong></td>
+						<td width="20%">Projection type</td>
+					</tr>
+					<tr>
+						<td width="25%"><strong>A / D</strong></td>
+						<td width="25%">Fovy</td>
+						<td width="10%"></td>
+						<td width="40%" colspan="2">(ortho, frustum, perspective)</td>
+					</tr>
+				</table>
+			</div>
+		</div>
+	</body>
+</html>
