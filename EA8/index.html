@@ -1,0 +1,304 @@
+<!DOCTYPE html5>
+<html>
+	<head>
+		<script src="ext/gl-matrix.js"></script>
+		<script src="GVT_Src_vertexData_plane.js"></script>
+		<script src="GVT_Src_vertexData_sphere.js"></script>
+		<script src="GVT_Src_vertexData_torus.js"></script>
+		<script src="ea8.js"></script>
+		
+		<!-- PHONG SHADER -->
+		<script type="x-shader/x-vertex" id="vertexshader-phong">
+			attribute vec3 aPosition;
+			attribute vec3 aNormal;
+			
+			uniform mat4 uPMatrix;
+			uniform mat4 uMVMatrix;
+			uniform mat3 uNMatrix;
+			
+			varying vec4 vColor;
+						
+			// Ambient light.
+			uniform vec3 ambientLight;
+			
+			// Pointlights.
+			const int MAX_LIGHT_SOURCES = 8;
+			struct LightSource {
+				bool isOn;
+				vec3 position;
+				vec3 color;
+			};
+			uniform LightSource light[MAX_LIGHT_SOURCES];
+			
+			// Material.
+			struct PhongMaterial {
+				vec3 ka;
+				vec3 kd;
+				vec3 ks;
+				float ke; 
+			};
+			uniform PhongMaterial material;
+			
+			// Phong illumination for single light source,
+			// no ambient light.
+			vec3 phong(vec3 p, vec3 n, vec3 v, LightSource l) {
+			    vec3 L = l.color;
+ 
+				vec3 s = normalize(l.position - p);
+				vec3 r = reflect(-s, n);
+
+				float sn = max( dot(s,n), 0.0);
+				float rv = max( dot(r,v), 0.0);
+
+				vec3 diffuse = material.kd * L * sn;
+
+				vec3 specular = material.ks * L * pow(rv, material.ke);
+
+				return diffuse + specular;
+			}
+			
+			// Phong illumination for multiple light sources
+			vec3 phong(vec3 p, vec3 n, vec3 v) {
+			
+				// Calculate ambient light.
+				vec3 result = material.ka * ambientLight;
+				
+				// Add light from all light sources.
+				for(int j=0; j < MAX_LIGHT_SOURCES; j++){
+					if(light[j].isOn){
+						result += phong(p, n, v, light[j]);
+					}
+				}
+				return result;
+			}
+			
+			void main(){
+				// Calculate vertex position in eye coordinates. 
+				vec4 tPosition = uMVMatrix * vec4(aPosition, 1.0);
+				// Calculate projektion.
+				gl_Position = uPMatrix * tPosition;
+			
+				vec3 tNormal = normalize(uNMatrix * aNormal);
+				
+				// Calculate view vector.
+				vec3 v = normalize(-tPosition.xyz);
+
+				vColor = vec4( phong(tPosition.xyz, tNormal, v), 1.0);
+			}
+		</script>
+		<script type="x-shader/x-fragment" id="fragmentshader-phong">
+			precision mediump float;
+			
+			varying vec4 vColor;
+			
+			void main() {
+				gl_FragColor = vColor;
+			}
+		</script>
+		<!-- END PHONG SHADER -->
+		
+		<!-- TOON SHADER -->
+		<script type="x-shader/x-vertex" id="vertexshader-toon">
+			attribute vec3 aPosition;
+			attribute vec3 aNormal;
+			
+			uniform mat4 uPMatrix;
+			uniform mat4 uMVMatrix;
+			uniform mat3 uNMatrix;
+			
+			varying vec3 vNormal;
+			varying vec4 vPosition;
+			
+			void main(){
+				// Calculate vertex position in eye coordinates. 
+				vec4 tPosition = uMVMatrix * vec4(aPosition, 1.0);
+				// Calculate projektion.
+				gl_Position = uPMatrix * tPosition;
+				
+				vNormal = normalize(uNMatrix * aNormal);
+				vPosition = tPosition;
+			}
+		</script>
+		<script type="x-shader/x-fragment" id="fragmentshader-toon">
+			precision mediump float;
+
+			varying vec3 vNormal;
+			varying vec4 vPosition;
+			
+			// Ambient light.
+			uniform vec3 ambientLight;
+			uniform float numberOfColors;
+			
+			// Pointlights.
+			const int MAX_LIGHT_SOURCES = 8;
+			struct LightSource {
+				bool isOn;
+				vec3 position;
+				vec3 color;
+			};
+			uniform LightSource light[MAX_LIGHT_SOURCES];
+			
+			// Material.
+			struct ToonMaterial {
+				vec3 ka;
+				vec3 kd;
+				vec3 ks;
+				float ke; 
+			};
+			uniform ToonMaterial material;
+			
+			// Toon illumination,
+			// no ambient light.
+			vec3 toon(vec3 p, vec3 n, vec3 v, LightSource l) {
+			    vec3 L = l.color;
+ 
+				vec3 s = normalize(l.position - p);
+				vec3 r = reflect(-s, n);
+
+				float sn = max(dot(s,n), 0.0);
+				float rv = max(dot(r,v), 0.0);
+				
+				// outline
+				if (max(dot(v, n), 0.0) < 0.25) {
+					return vec3(0, 0, 0);
+				} else {
+					if (sn <= 1.) {
+						sn = ceil(sn / (1./numberOfColors)) * (1./numberOfColors);
+					}
+					float spec = pow(max(0.0, dot(r, s)), 10.0); 
+					// more than specific highlight intensity? 
+					if (spec > 0.8) {
+						return vec3(1, 1, 1);
+					}
+					// manage reflection highlights.
+					if (rv < 1.0) {
+						rv = 0.;
+					}
+				}
+
+				vec3 diffuse = material.kd * L * sn;
+				vec3 specular = material.ks * L * pow(rv, material.ke);
+				return diffuse + specular;
+			}
+			
+			// Toon illumination for multiple light sources
+			vec3 toon(vec3 p, vec3 n, vec3 v) {
+			
+				// Calculate ambient light.
+				vec3 result = material.ka * ambientLight;
+				
+				// Add light from all light sources.
+				for(int j=0; j < MAX_LIGHT_SOURCES; j++){
+					if(light[j].isOn){
+						result += toon(p, n, v, light[j]);
+					}
+				}
+				return result;
+			}
+			
+			void main() {
+				// Calculate view vector.
+				vec3 v = normalize(-vPosition.xyz);
+				vec3 vNormal = normalize(vNormal);
+				gl_FragColor = vec4(toon(vPosition.xyz, vNormal, v), 1.0);
+			}
+		</script>
+	</head>
+	<style type="text/css">
+		body {
+			margin: 0;
+			background-size: 100% 100%;
+			background-color: #333;
+			font-family: "Roboto","Helvetica Neue",Helvetica,Arial,sans-serif;
+			text-transform: uppercase;
+		}
+		
+		h1 {
+			letter-spacing: 5px;
+			margin: 2%;
+			font-weight: normal;
+			color: #F2F2F2;
+		}
+		
+		.wrapper {
+			background-color: #fff;
+			-webkit-border-radius: 50px;
+			-moz-border-radius: 50px;
+			border-radius: 50px;
+			border: 5px solid #333;
+			width: 700px;
+			height: 750px;
+			margin: auto;
+		}
+		
+		.flaeche {
+			width: 650px;
+			height: 650px;
+			padding-top: 25px;
+			margin: auto;
+		}
+
+		table tr td {
+			font-size: 12px;
+			letter-spacing: 2px;
+			color: #A2A2A2;
+		}
+	</style>
+	<body onload="app.start()">
+		<h1 align="center">Einsendeaufgabe 8 - Lichter auf Kreisbahn mit Toon Shading</h1>
+		<div class="wrapper">
+			<div class="flaeche">
+				<canvas id="canvas" width="650" height="650"></canvas>
+				<table border="0" width="100%">
+					<tr>
+						<td width="50%">
+							<input type="radio" name="shader" id="shader-phong" value="phong" checked="checked" onClick="changeShader('phong');" />
+							<label for="shader-phong"> Phong Shader</label>
+						</td>
+						<td width="50%"><strong>L:</strong> Bewegung der Lichter</td>
+					</tr>
+					<tr>
+						<td width="50%">
+							<input type="radio" name="shader" id="shader-toon" value="toon" onClick="changeShader('toon');" />
+							<label for="shader-toon"> Toon Shader</label>
+						</td>
+						<td width="50%">
+							Abstufungen:
+							<button name="minus" onClick="decreaseNumberOfColors();">-</button>
+							<span id="noc">4</span>
+							<button name="plus" onClick="increaseNumberOfColors();">+</button>
+						</td>
+					</tr>
+				</table>
+			</div>
+		</div>
+		<script>	
+			// get selected shader.
+			var userInputNumberOfColors = parseInt(document.getElementById("noc").textContent, 10);
+			var shaderRadios = document.getElementsByName("shader");
+			var shader = shaderRadios[0].checked ? shaderRadios[0].value : shaderRadios[1].value;
+			
+			function changeShader(selectedShader) {
+				shader = selectedShader;
+				app.start();
+			}
+			
+			function decreaseNumberOfColors() {
+				if (userInputNumberOfColors > 0) {
+					userInputNumberOfColors--;
+					document.getElementById("noc").innerHTML = userInputNumberOfColors;
+					app.start();
+				}
+			}
+			
+			function increaseNumberOfColors() {
+				if (userInputNumberOfColors < 10) {
+					userInputNumberOfColors++;
+					document.getElementById("noc").innerHTML = userInputNumberOfColors;
+					app.start();
+				}
+			}
+		</script>
+
+	</body>
+</html>
