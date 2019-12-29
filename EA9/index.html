@@ -1,0 +1,271 @@
+<!DOCTYPE html5>
+<html>
+	<head>
+		<script src="ext/gl-matrix.js"></script>
+		<script src="GVT_Src_vertexData_torus.js"></script>
+		<script src="ea9.js"></script>
+		
+		<script type="x-shader/x-vertex" id="vertexshader">
+			attribute vec3 aPosition;
+			attribute vec3 aNormal;
+			attribute vec2 aTextureCoord;
+
+			uniform mat4 uPMatrix;
+			uniform mat4 uMVMatrix;
+			uniform mat3 uNMatrix;
+			
+			varying vec3 vNormal;
+			varying vec4 vPosition;
+			
+			varying vec2 vTextureCoord;
+
+			void main(){
+				// Calculte vertex position in eye coordinates. 
+				vec4 tPosition = uMVMatrix * vec4(aPosition, 1.0);
+				// Calculate projektion.
+				gl_Position = uPMatrix * tPosition;
+	
+				vec3 tNormal = normalize(uNMatrix * aNormal);
+				tNormal = uNMatrix * aNormal;
+				
+				vPosition = tPosition;
+				vNormal = tNormal;				
+				vTextureCoord = aTextureCoord;		
+			}
+		</script>
+		<script type="x-shader/x-fragment" id="fragmentshader">
+			precision mediump float;
+			
+			uniform sampler2D uTexture;
+			
+			varying vec2 vTextureCoord;
+			varying vec3 vNormal;
+			varying vec4 vPosition;
+			
+			// Material.
+			struct PhongMaterial {
+				vec3 ka;
+				vec3 kd;
+				vec3 ks;
+				float ke; 
+			};
+			uniform PhongMaterial material;
+			
+			// Ambient light.
+			uniform vec3 ambientLight;
+			
+			// UI uniforms
+			uniform float numberOfCaros;
+			uniform int selectedTexture;
+			
+			// Pointlights.
+			const int MAX_LIGHT_SOURCES = 8;
+			struct LightSource {
+				bool isOn;
+				vec3 position;
+				vec3 color;
+			};
+			uniform LightSource light[MAX_LIGHT_SOURCES];
+			
+			// Phong illumination for single light source,
+			// no ambient light.
+			vec3 phong(vec3 p, vec3 n, vec3 v, LightSource l) {
+			
+				vec3 L = l.color;
+			
+				vec3 s = normalize(l.position - p);
+				vec3 r = reflect(-s, n);
+				
+				float sn = max( dot(s,n), 0.0);
+				float rv = max( dot(r,v), 0.0);
+							
+				vec3 diffuse = material.kd * L * sn;								
+				vec3 specular = material.ks * L * pow(rv, material.ke);
+			
+				return diffuse + specular;			
+			}
+			
+			// Phong illumination for multiple light sources
+			vec3 phong(vec3 p, vec3 n, vec3 v) {
+				// Calculate ambient light.
+				vec3 result = material.ka * ambientLight;
+				
+				// Add light from all light sources.
+				for(int j=0; j < MAX_LIGHT_SOURCES; j++){
+					if(light[j].isOn){
+						result += phong(p, n, v, light[j]);
+					}
+				}
+				return result;
+			}
+
+			// Tartan Karos
+			float karo(vec2 st, vec2 size, float smoothEdges){
+				size = vec2(0.5) - size * 0.5;
+				vec2 aa = vec2(smoothEdges * 0.5);
+				vec2 uv = smoothstep(size, size + aa, st);
+				uv *= smoothstep(size, size + aa, vec2(1.0) - st);
+				return uv.x * uv.y;
+			}
+
+			vec2 offset(vec2 st, vec2 offset){
+				vec2 uv;
+
+				if(st.x > 0.5) {
+					uv.x = st.x - 0.5;
+				} else {
+					uv.x = st.x + 0.5;
+				}
+
+				if(st.y > 0.5){
+					uv.y = st.y - 0.5;
+				} else {
+					uv.y = st.y + 0.5;
+				}
+
+				return uv;
+			}
+			
+			void main() {
+				// Calculate view vector.
+				// For ortho projection:
+				vec3 v = vec3(0,0,-1);
+			 
+				vec3 vNormal = normalize(vNormal);
+				vec4 tColor;
+				vec4 lighting = vec4(phong(vPosition.xyz, vNormal, v), 1.0);
+			 
+				if (selectedTexture == 1) {
+					// Prozedurales Tartan-Muster
+					vec3 tartanColor = vec3(0.5, 0., 0.);
+					vec2 st = vTextureCoord;
+					st = fract(st * numberOfCaros);
+					vec2 offsetSt = offset(st, vec2(0.5));
+					vec3 pattern = vec3(
+						karo(offsetSt, vec2(0.5), 0.1) +
+						karo(offsetSt, vec2(0.8), 0.1) -
+						karo(st, vec2(0.6), 0.1) +
+						karo(st, vec2(0.8), 0.1)
+					);
+					tColor = vec4(pattern * tartanColor, 1.0);
+				} else {
+					// Bild
+					tColor = texture2D(uTexture, vTextureCoord);
+				}
+				
+				gl_FragColor = tColor * lighting;
+			}			
+		</script>
+	</head>
+	<style type="text/css">
+		body {
+			margin: 0;
+			background-size: 100% 100%;
+			background-color: #333;
+			font-family: "Roboto","Helvetica Neue",Helvetica,Arial,sans-serif;
+			text-transform: uppercase;
+		}
+		
+		h1 {
+			letter-spacing: 5px;
+			margin: 2%;
+			font-weight: normal;
+			color: #F2F2F2;
+		}
+		
+		.wrapper {
+			background-color: #fff;
+			-webkit-border-radius: 50px;
+			-moz-border-radius: 50px;
+			border-radius: 50px;
+			border: 5px solid #333;
+			width: 700px;
+			height: 750px;
+			margin: auto;
+		}
+		
+		.flaeche {
+			width: 650px;
+			height: 650px;
+			padding-top: 25px;
+			margin: auto;
+		}
+
+		table tr td {
+			font-size: 12px;
+			letter-spacing: 2px;
+			color: #A2A2A2;
+		}
+		
+		a {
+			font-weight: 600;
+			color: #A2A2A2;
+			text-decoration: none;
+		}
+		
+		a:hover {
+			color: #C2C2C2;
+		}
+	</style>
+	<body onload="app.start()">
+		<h1 align="center">Einsendeaufgabe 9 - Torustextur</h1>
+		<div class="wrapper">
+			<div class="flaeche">
+				<canvas id="canvas" width="650" height="650"></canvas>
+				<table border="0" width="100%">
+					<tr>
+						<td width="50%">
+							<input type="radio" name="textur" id="texture-bild" value="bild" checked="checked" onClick="changeTextur(0);" />
+							<label for="texture-bild"> Bildtextur</label>
+							<a href="textures/donut.png" target=_blank>
+								<img src="bild.png" width="15" alt="Klicken f&uuml;r Bildtextur" title="Klicken f&uuml;r Bildtextur" />
+								(eigenes)
+							</a>
+						</td>
+						<td width="50%"><strong>L:</strong> Bewegung der Lichter</td>
+					</tr>
+					<tr>
+						<td width="50%">
+							<input type="radio" name="textur" id="texture-prozedural" value="prozedural" onClick="changeTextur(1);" />
+							<label for="texture-prozedural"> Prozedurale Textur</label>
+						</td>
+						<td width="50%">
+							Tartan-Karo-Dichte:
+							<button name="minus" onClick="decreaseNumberOfCaros();">-</button>
+							<span id="noc">8</span>
+							<button name="plus" onClick="increaseNumberOfCaros();">+</button>
+						</td>
+					</tr>
+				</table>
+			</div>
+		</div>
+		<script>	
+			// get selected texture style.
+			var userInputNumberOfCaros = parseInt(document.getElementById("noc").textContent, 10);
+			var texturRadios = document.getElementsByName("textur");
+			var selectedTexture = texturRadios[0].checked ? 0 : 1;
+			
+			function changeTextur(selectedTextureInput) {
+				selectedTexture = selectedTextureInput;
+				app.start();
+			}
+			
+			function decreaseNumberOfCaros() {
+				if (userInputNumberOfCaros > 2) {
+					userInputNumberOfCaros--;
+					document.getElementById("noc").innerHTML = userInputNumberOfCaros;
+					app.start();
+				}
+			}
+			
+			function increaseNumberOfCaros() {
+				if (userInputNumberOfCaros < 15) {
+					userInputNumberOfCaros++;
+					document.getElementById("noc").innerHTML = userInputNumberOfCaros;
+					app.start();
+				}
+			}
+		</script>
+
+	</body>
+</html>
